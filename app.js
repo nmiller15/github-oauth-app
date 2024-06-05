@@ -68,11 +68,18 @@ app.use(passport.session());
  * Routes
 */
 
+app.get('/auth/github', passport.authenticate('github', { scope: 'user' }));
+
+app.get('/auth/github/callback', passport.authenticate('github', {
+  failureRedirect: '/login',
+  successRedirect: '/'
+}))
+
 app.get('/', (req, res) => {
   res.render('index', { user: req.user });
 })
 
-app.get('/account', (req, res) => {
+app.get('/account', ensureAuthenticated, (req, res) => {
   res.render('account', { user: req.user });
 });
 
@@ -97,4 +104,13 @@ app.listen(PORT, () => console.log(`Listening on ${PORT}`));
 /*
  * ensureAuthenticated Callback Function
 */
+const ensureAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    next();
+  } else {
+    res.redirect('/login');
+  }
+}
 
+
+// Tutorial link: https://www.codecademy.com/journeys/full-stack-engineer/paths/fscj-22-back-end-development/tracks/fscj-22-user-authentication-authorization/modules/wdcp-22-oauth-2-5f34be97-c15d-455b-b8bf-159e7e8d099b/articles/oauth2-project
